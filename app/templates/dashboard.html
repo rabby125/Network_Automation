@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | Network Automation</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <script>
+        const CURRENT_ROLE = "{{ role }}";
+    </script>
+    <div class="app-layout">
+
+        <!-- ============== Sidebar ============== -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">🌐 NetAuto</div>
+
+        <nav class="sidebar-nav">
+            <button class="sidebar-item active" data-target="panel-search">🔍 Dashboard</button>
+
+            <button class="sidebar-item" data-target="panel-create">
+                ➕ Add Device
+            </button>
+
+            <button class="sidebar-item" data-target="panel-admin">
+                👥 Admin Management
+            </button>
+
+            <button class="sidebar-item" data-target="panel-settings">
+                ⚙️ Settings
+            </button>
+        </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">👤 {{ username }} <span class="sidebar-role">({{ role }})</span></div>
+                <a href="/logout" class="sidebar-item sidebar-logout">🚪 Logout</a>
+            </div>
+        </aside>
+
+        <!-- ============== Main Content ============== -->
+        <main class="content">
+
+            <!-- ============== Panel: Search / Dashboard ============== -->
+            <div id="panel-search" class="panel">
+                <div class="container">
+
+                    <!-- ============== Summary Cards ============== -->
+                    <div class="summary-cards" id="summaryCards">
+                        <div class="summary-card" onclick="summaryCardClick('all')">
+                            <div class="summary-icon">🖥️</div>
+                            <div class="summary-info">
+                                <div class="summary-value" id="summaryTotalDevices">-</div>
+                                <div class="summary-label">Total Devices</div>
+                            </div>
+                        </div>
+
+                        <div class="summary-card" onclick="summaryCardClick('groups')">
+                            <div class="summary-icon">🗂️</div>
+                            <div class="summary-info">
+                                <div class="summary-value" id="summaryTotalGroups">-</div>
+                                <div class="summary-label">Total Groups</div>
+                            </div>
+                        </div>
+
+                        <div class="summary-card summary-online" onclick="summaryCardClick('online')">
+                            <div class="summary-icon">🟢</div>
+                            <div class="summary-info">
+                                <div class="summary-value" id="summaryOnline">-</div>
+                                <div class="summary-label">Online</div>
+                            </div>
+                        </div>
+
+                        <div class="summary-card summary-offline" onclick="summaryCardClick('offline')">
+                            <div class="summary-icon">🔴</div>
+                            <div class="summary-info">
+                                <div class="summary-value" id="summaryOffline">-</div>
+                                <div class="summary-label">Offline / Unknown</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============== Search Filters ============== -->
+                    <div class="card">
+                        <h3>🔎 Search Filters</h3>
+
+                        <div class="filters-grid">
+
+                            <!-- GROUP -->
+                            <div class="form-group">
+                                <label>Group</label>
+
+                                <div class="custom-dropdown" id="groupDropdown">
+
+                                    <button type="button"
+                                            class="dropdown-toggle"
+                                            onclick="toggleFilterDropdown('groupDropdown')">
+
+                                        <span id="groupSelectedText">
+                                            🔘 All Groups
+                                        </span>
+
+                                        <span class="dropdown-arrow">▼</span>
+                                    </button>
+
+                                    <div class="dropdown-menu">
+
+                                        <label class="dropdown-option">
+                                            <input
+                                                type="checkbox"
+                                                value=""
+                                                id="groupAll"
+                                                checked
+                                            >
+                                            <span>🔘 All Groups</span>
+                                        </label>
+
+                                        <div id="groupOptions"></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ZONE -->
+                            <div class="form-group">
+                                <label>Zone</label>
+
+                                <div class="custom-dropdown" id="zoneDropdown">
+
+                                    <button type="button"
+                                            class="dropdown-toggle"
+                                            onclick="toggleFilterDropdown('zoneDropdown')">
+
+                                        <span id="zoneSelectedText">
+                                            🔘 All Zones
+                                        </span>
+
+                                        <span class="dropdown-arrow">▼</span>
+                                    </button>
+
+                                    <div class="dropdown-menu">
+
+                                        <label class="dropdown-option">
+                                            <input
+                                                type="checkbox"
+                                                value=""
+                                                id="zoneAll"
+                                                checked
+                                            >
+                                            <span>🔘 All Zones</span>
+                                        </label>
+
+                                        <div id="zoneOptions"></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- DEVICE -->
+                            <div class="form-group">
+                                <label>Device</label>
+
+                                <div class="custom-dropdown" id="deviceDropdown">
+
+                                    <button type="button"
+                                            class="dropdown-toggle"
+                                            onclick="toggleFilterDropdown('deviceDropdown')">
+
+                                        <span id="deviceSelectedText">
+                                            🔘 All Devices
+                                        </span>
+
+                                        <span class="dropdown-arrow">▼</span>
+                                    </button>
+
+                                    <div class="dropdown-menu">
+
+                                        <label class="dropdown-option">
+                                            <input
+                                                type="checkbox"
+                                                value=""
+                                                id="deviceAll"
+                                                checked
+                                            >
+                                            <span>🔘 All Devices</span>
+                                        </label>
+
+                                        <div id="deviceOptions"></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- USERNAME -->
+                            <div class="form-group">
+                                <label>Username</label>
+
+                                <input
+                                    type="text"
+                                    id="filterUsername"
+                                    placeholder="Search for a user on device"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <p class="text-muted" style="margin-bottom:14px;">
+                            💡 Selecting one option in Group, Zone or Device acts as a single select.
+                            Hold <b>Ctrl</b> (or <b>Cmd</b> on Mac) and click to select multiple.
+                            Selecting "All" will select everything at that level.
+                        </p>
+
+
+                        <!-- 🧪 Test Mode / Dry Run Toggle -->
+                        <div class="test-mode-box">
+                            <label>
+                                <input type="checkbox" id="testModeToggle">
+                                🧪 Test Mode (no real change on the device)
+                            </label>
+                            <p class="text-muted" style="margin:4px 0 0 0;">
+                                When enabled, Create / Edit / Delete (Single and Bulk) will only connect to
+                                the device to check if the user exists -- no real change will be made.
+                            </p>
+                        </div>
+
+
+                        <div class="search-actions-row">
+                            <button class="btn btn-primary" id="searchBtn">
+                                🔍 Search
+                            </button>
+
+                            <button class="btn btn-success" id="bulkCreateBtn">
+                                ➕ Create User
+                            </button>
+
+                            <button class="btn btn-danger" id="bulkRemoveBtn">
+                                🗑️ Remove User
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- ============== Search Result ============== -->
+                    <div class="card">
+                        <h3>📋 Search Result</h3>
+                        <table class="table" id="resultTable">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Group</th>
+                                    <th>Zone</th>
+                                    <th>Vendor</th>
+                                    <th>Device</th>
+                                    <th>IP</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultBody">
+                                <tr><td colspan="8" class="text-muted">Search to see results</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ============== Bulk Create/Remove Result ============== -->
+                    <div class="card hidden" id="bulkResultCard">
+                        <h3 id="bulkResultTitle">⚡ Bulk Result</h3>
+                        <p class="text-muted" id="bulkResultSummary"></p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Group</th>
+                                    <th>Zone</th>
+                                    <th>Device</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkResultBody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- ============== Activity Log ============== -->
+                    <div class="card">
+                        <h3>🕒 Activity Log</h3>
+                        <ul class="activity-log" id="activityLog">
+                            <li class="text-muted">No activity yet</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============== Panel: Create Device ============== -->
+            <div id="panel-create" class="panel hidden">
+                <div class="container">
+                    <div class="card" style="max-width:520px;">
+                        <h3>➕ Add New Device</h3>
+
+                        <div id="createDeviceAlert"></div>
+
+                        <div class="form-group">
+                            <label>Group Name</label>
+                            <input type="text" id="cdGroup" placeholder="e.g. Circle Home">
+                        </div>
+                        <div class="form-group">
+                            <label>Zone</label>
+                            <input type="text" id="cdZone" placeholder="e.g. Dhaka">
+                        </div>
+                        <div class="form-group">
+                            <label>Vendor</label>
+                            <select id="cdVendor">
+                                <option value="MikroTik">MikroTik</option>
+                                <option value="Cisco">Cisco</option>
+                                <option value="Huawei">Huawei</option>
+                                <option value="Juniper">Juniper</option>
+                                <option value="Arista">Arista</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Hostname</label>
+                            <input type="text" id="cdHostname" placeholder="e.g. MT-DHK-02">
+                        </div>
+                        <div class="form-group">
+                            <label>IP Address</label>
+                            <input type="text" id="cdIp" placeholder="e.g. 10.10.10.2">
+                        </div>
+                        <div class="form-group">
+                            <label>SSH Port</label>
+                            <input type="number" id="cdPort" value="22">
+                        </div>
+                        <div class="form-group">
+                            <label>SSH Username</label>
+                            <input type="text" id="cdSshUser" placeholder="Username to log into the device">
+                        </div>
+                        <div class="form-group">
+                            <label>SSH Password</label>
+                            <input type="text" id="cdSshPass" placeholder="Password to log into the device">
+                        </div>
+
+                        <button class="btn btn-primary btn-block" id="createDeviceBtn">✅ Add Device</button>
+                    </div>
+
+                    <div class="card">
+
+                        <h3>📋 Device List <span class="text-muted" id="deviceListFilterLabel"></span></h3>
+
+                        <button class="btn btn-primary" id="loadDeviceListBtn">
+                            🔄 Load Device List
+                        </button>
+
+                        <br><br>
+
+                        <table class="table">
+
+                            <thead>
+                                <tr>
+                                    <th>Group</th>
+                                    <th>Zone</th>
+                                    <th>Vendor</th>
+                                    <th>Hostname</th>
+                                    <th>IP</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="deviceTableBody">
+
+                                <tr>
+                                    <td colspan="7" class="text-muted">
+                                        No data loaded yet.
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ============== Panel: Admin Management ============== -->
+            <div id="panel-admin" class="panel hidden">
+                <div class="container">
+
+                    <div class="card">
+
+                        <h3>👥 Admin Management</h3>
+
+                        <p class="text-muted">
+                            From here, Super Admin can create new Admins,
+                            change Roles, Reset Passwords, and Delete admins.
+                        </p>
+
+                        <hr><br>
+
+                        <h4>Create Admin</h4>
+
+                        <div class="form-group">
+                            <input type="text" id="newAdminUsername" placeholder="Username">
+                        </div>
+
+                        <div class="form-group">
+                            <input type="password" id="newAdminPassword" placeholder="Password">
+                        </div>
+
+                        <div class="form-group">
+                            <select id="newAdminRole">
+                                <option value="read">Read</option>
+                                <option value="write">Write</option>
+                                <option value="super_admin">Super Admin</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-success" id="createAdminBtn">
+                            ➕ Create Admin
+                        </button>
+
+                        <br><br>
+
+                        <button class="btn btn-primary" id="loadAdminBtn">
+                            🔄 Load Admin List
+                        </button>
+
+                        <br><br>
+
+                        <table class="table">
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminTableBody">
+
+                                <tr>
+                                    <td colspan="4" class="text-muted">
+                                        No data loaded yet.
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ============== Panel: Settings (Password Change) ============== -->
+            <div id="panel-settings" class="panel hidden">
+                <div class="container">
+                    <div class="card" style="max-width:420px;">
+                        <h3>⚙️ Change Password</h3>
+
+                        <div id="settingsAlert"></div>
+
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="stCurrentPassword">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="stNewPassword">
+                        </div>
+                        <div class="form-group">
+                            <label>Re-enter New Password</label>
+                            <input type="password" id="stConfirmPassword">
+                        </div>
+
+                        <button class="btn btn-primary btn-block" id="changePasswordBtn">🔒 Change Password</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ============== Create/Edit User Modal ============== -->
+    <div id="userModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="modalTitle">Create User</h3>
+            <input type="hidden" id="modalDeviceId">
+            <input type="hidden" id="modalMode">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="modalUsername">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="text" id="modalPassword" placeholder="New / updated password">
+            </div>
+            <div id="modalGroupFields">
+                <div class="form-group">
+                    <label>Group (MikroTik only)</label>
+                    <select id="modalGroup">
+                        <option value="full" selected>full</option>
+                        <option value="write">write</option>
+                        <option value="read">read</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Allowed Address (optional)</label>
+                    <input type="text" id="modalAddress" placeholder="e.g. 192.168.1.0/24 — leave empty to allow login from anywhere">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="modalSaveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== Bulk Create User Modal ============== -->
+    <div id="bulkCreateModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>➕ Bulk Create User</h3>
+            <div id="bulkCreateAlert"></div>
+            <p class="text-muted" id="bulkCreateSummary"></p>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="bulkCreateUsername" disabled>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="text" id="bulkCreatePassword" placeholder="Password for all devices">
+            </div>
+            <div class="form-group">
+                <label>Group (MikroTik only)</label>
+                <select id="bulkCreateGroup">
+                    <option value="full" selected>full</option>
+                    <option value="write">write</option>
+                    <option value="read">read</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Allowed Address (optional)</label>
+                <input type="text" id="bulkCreateAddress" placeholder="e.g. 192.168.1.0/24 — leave empty to allow login from anywhere">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="bulkCreateCancelBtn">Cancel</button>
+                <button class="btn btn-success" id="bulkCreateConfirmBtn">✅ Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== Bulk Remove User Modal ============== -->
+    <div id="bulkRemoveModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>🗑️ Bulk Remove User</h3>
+            <p class="text-muted" id="bulkRemoveSummary"></p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="bulkRemoveCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="bulkRemoveConfirmBtn">🗑️ Confirm, Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== Edit Device Modal ============== -->
+    <div id="editDeviceModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>✏️ Edit Device</h3>
+            <input type="hidden" id="edDeviceId">
+            <div class="form-group">
+                <label>Group</label>
+                <input type="text" id="edGroup">
+            </div>
+            <div class="form-group">
+                <label>Zone</label>
+                <input type="text" id="edZone">
+            </div>
+            <div class="form-group">
+                <label>Vendor</label>
+                <select id="edVendor">
+                    <option value="MikroTik">MikroTik</option>
+                    <option value="Cisco">Cisco</option>
+                    <option value="Huawei">Huawei</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Hostname</label>
+                <input type="text" id="edHostname">
+            </div>
+            <div class="form-group">
+                <label>IP Address</label>
+                <input type="text" id="edIp">
+            </div>
+            <div class="form-group">
+                <label>SSH Port</label>
+                <input type="number" id="edPort" value="22">
+            </div>
+            <div class="form-group">
+                <label>SSH Username</label>
+                <input type="text" id="edSshUser">
+            </div>
+            <div class="form-group">
+                <label>SSH Password (leave empty to keep the old one)</label>
+                <input type="text" id="edSshPass" placeholder="Enter a new password if you want to change it">
+            </div>
+            <div id="editDeviceAlert"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="editDeviceCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="editDeviceSaveBtn">💾 Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
